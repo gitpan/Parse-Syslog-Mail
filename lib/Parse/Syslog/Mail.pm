@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.02';
+  $VERSION = '0.03';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =head1 SYNOPSIS
 
@@ -169,10 +169,19 @@ sub next {
         return undef unless defined $log;
         redo unless $log->{program} =~ /^(?:sendmail|postfix)/;
         redo if $log->{text} =~ /^(?:NOQUEUE|STARTTLS)/;
-        $log->{text} =~ s/^(\w+):// and my $id = $1;
+
+        $log->{text} =~ s/^(\w+):// and my $id = $1;  # gather the MTA unique id
         redo unless $id;
+
+        redo if $log->{text} =~ /^\s*(?:Milter|SYSERR)/;  # we don't treat these
+
+        $log->{text} =~ s/^\s*([^=]+)\s*$/status=$1/;
         my @fields = split ', ', $log->{text};
-        %mail = map { s/,$//; s/^ +//; s/ +$//; split /=/ } @fields;
+        %mail = map {
+                s/,$//;  s/^ +//;  s/ +$//;  # cleaning spaces
+                s/^stat=/status=/;           # renaming 'stat' field to 'status'
+                split /=/
+            } @fields;
         $mail{id} = $id;
         $mail{timestamp} = $log->{timestamp};
     }
