@@ -5,8 +5,8 @@ use File::Spec;
 use Parse::Syslog::Mail;
 
 # check that the following functions are available
-ok( defined \&Parse::Syslog::Mail::new  ); #01
-ok( defined \&Parse::Syslog::Mail::next ); #02
+ok( exists &Parse::Syslog::Mail::new    ); #01
+ok( exists &Parse::Syslog::Mail::next   ); #02
 
 # create an object
 my $parser = undef;

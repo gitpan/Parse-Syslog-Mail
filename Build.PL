@@ -9,7 +9,11 @@ my $builder = Module::Build->new(
     dist_version_from   => 'lib/Parse/Syslog/Mail.pm',
     requires => {
         'Parse::Syslog' => 0,
+    },
+    build_requires => {
         'Test::More' => 0,
+        'Test::Exception' => 0,
+        'Test::Warn' => 0,
     },
     add_to_cleanup      => [ 'Parse-Syslog-Mail-*' ],
 );

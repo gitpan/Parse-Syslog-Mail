@@ -5,12 +5,14 @@ META.yml # Will be created by "make dist"
 Makefile.PL
 README
 lib/Parse/Syslog/Mail.pm
+script/parse.pl
 t/00load.t
 t/00prereq.t
 t/01api.t
+t/03diag.t
+t/10parse.t
+t/sendmail.log
 t/distchk.t
 t/podcover.t
 t/pod.t
 t/portfs.t
-t/sendmail.log
-t/postfix.log
