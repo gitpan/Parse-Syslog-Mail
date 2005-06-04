@@ -15,6 +15,9 @@ my $builder = Module::Build->new(
         'Test::Exception' => 0,
         'Test::Warn' => 0,
     },
+    recommands => {
+        'File::Tail' => 0,
+    },
     add_to_cleanup      => [ 'Parse-Syslog-Mail-*' ],
 );
 

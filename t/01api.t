@@ -4,6 +4,8 @@ BEGIN { plan tests => 18 }
 use File::Spec;
 use Parse::Syslog::Mail;
 
+my $file = File::Spec->catfile(qw(t logs sendmail-plain.log));
+
 # check that the following functions are available
 ok( exists &Parse::Syslog::Mail::new,      "new() exists" );
 ok( exists &Parse::Syslog::Mail::next,     "next() exists" );
@@ -12,7 +14,7 @@ ok( exists &Parse::Syslog::Mail::next,     "next() exists" );
 # create an object with new() as a class method
 my $parser = undef;
 is( $parser, undef,                        "Creating an object with CLASS->new()" );
-eval { $parser = new Parse::Syslog::Mail File::Spec->catfile('t','sendmail.log') };
+eval { $parser = new Parse::Syslog::Mail $file };
 is( $@, '',                                " - no error" );
 ok( defined $parser,                       " - is defined" );
 ok( $parser->isa('Parse::Syslog::Mail'),   " - is a Parse::Syslog::Mail object" );
@@ -27,7 +29,7 @@ is( ref $parser->can('next'),    'CODE',   " - can next()" );
 # create an object with new() as an object method
 my $parser2 = undef;
 is( $parser2, undef,                       "Creating an object with \$parser->new()" );
-eval { $parser2 = $parser->new(File::Spec->catfile('t','sendmail.log')) };
+eval { $parser2 = $parser->new($file) };
 is( $@, '',                                " - no error" );
 ok( defined $parser2,                      " - is defined" );
 ok( $parser2->isa('Parse::Syslog::Mail'),  " - is a Parse::Syslog::Mail object" );

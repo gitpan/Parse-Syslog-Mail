@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.03';
+  $VERSION = '0.04';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =head1 SYNOPSIS
 
@@ -170,20 +170,24 @@ sub next {
         redo unless $log->{program} =~ /^(?:sendmail|postfix)/;
         redo if $log->{text} =~ /^(?:NOQUEUE|STARTTLS)/;
 
-        $log->{text} =~ s/^(\w+):// and my $id = $1;  # gather the MTA unique id
+        $log->{text} =~ s/^(\w+):// and my $id = $1;       # gather the MTA unique id
         redo unless $id;
 
-        redo if $log->{text} =~ /^\s*(?:Milter|SYSERR)/;  # we don't treat these
+        redo if $log->{text} =~ /^\s*(?:Milter|SYSERR)/;   # we don't treat these
 
-        $log->{text} =~ s/^\s*([^=]+)\s*$/status=$1/;
-        my @fields = split ', ', $log->{text};
+        $log->{text} =~ s/^\s*([^=]+)\s*$/status=$1/;      # format status messages
+        $log->{text} =~ s/collect: /collect=/;             # treat collect messages as field identifiers
+        $log->{text} =~ s/(\S+),\s+([\w-]+)=/$1\t$2=/g;    # replace field seperators with tab characters
+
+        my @fields = split /\t/, $log->{text};
         %mail = map {
                 s/,$//;  s/^ +//;  s/ +$//;  # cleaning spaces
                 s/^stat=/status=/;           # renaming 'stat' field to 'status'
-                split /=/
+                s/.*\s+([\w-]+=)/$1/;        # cleaning up field names
+                split /=/, $_, 2;            # no more than 2 elements
             } @fields;
         $mail{id} = $id;
-        $mail{timestamp} = $log->{timestamp};
+        map { $mail{$_} = $log->{$_} } qw(host program timestamp text);
     }
 
     return \%mail

@@ -1,7 +1,15 @@
 Revision history for Parse-Syslog-Mail
 
+0.04    2005.06.04
+        [BUGFIX] RT#12775 (Jason T Hardy): Odd number of elements in hashref 
+        because of map and split bug
+        [FEATURE] Now restricting fields names to words (/^[\w-]$/)
+        [TESTS] Renamed t/10parse.t to t/11values.t
+        [TESTS] Added t/10fields.t
+
 0.03    2005.04.07
         [BUGFIX] Parsing was improved a bit.
+        [TESTS] Improved t/01api.t
 
 0.02    2005.04.03
         [TESTS] Corrected t/01api.t

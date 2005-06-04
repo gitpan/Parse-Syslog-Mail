@@ -6,7 +6,7 @@ use Parse::Syslog::Mail;
 
 my $maillog = undef;
 is( $maillog, undef                      , "Creating a new object" );
-$maillog = new Parse::Syslog::Mail File::Spec->catfile(qw(t sendmail.log));
+$maillog = new Parse::Syslog::Mail File::Spec->catfile(qw(t logs sendmail-plain.log));
 ok( defined $maillog                     , " - object is defined" );
 is( ref $maillog, 'Parse::Syslog::Mail'  , " - object is of expected ref type" );
 ok( $maillog->isa('Parse::Syslog::Mail') , " - object is a Parse::Syslog::Mail object" );
@@ -30,7 +30,7 @@ while(my $log = $maillog->next) {
     my $id = $log->{id};
     if(exists $mail{$id}) {
         ok( exists $mail{$id} , "id $id" );
-        map { exists $mail{$id}{$_} and is( $log->{$_}, $mail{$id}{$_}, "  field $_" ) } keys %$log;
+        map { exists $mail{$id}{$_} and is( $log->{$_}, $mail{$id}{$_}, "  field '$_'" ) } keys %$log;
     }
 }
 
