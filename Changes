@@ -1,5 +1,10 @@
 Revision history for Parse-Syslog-Mail
 
+0.05    2005.07.13
+        [BUGFIX] Now skipping a few more garbage lines.
+        [TESTS] Improved t/10fields.t in order t oexecute tests with local logs.
+        [DOC] Updated documentation.
+
 0.04    2005.06.04
         [BUGFIX] RT#12775 (Jason T Hardy): Odd number of elements in hashref 
         because of map and split bug

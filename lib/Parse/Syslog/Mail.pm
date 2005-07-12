@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.04';
+  $VERSION = '0.05';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =head1 SYNOPSIS
 
@@ -37,7 +37,7 @@ reading the syslog, and offer the same simple interface.
 
 =over 4
 
-=item new()
+=item B<new()>
 
 Creates and returns a new C<Parse::Syslog::Mail> object. 
 A file path or a C<File::Tail> object is expected as first argument. 
@@ -109,7 +109,7 @@ sub new {
     return $self
 }
 
-=item next()
+=item B<next()>
 
 Returns the next line of the syslog as a hashref, C<undef> when there 
 is no more lines. The hashref contains at least the following keys: 
@@ -118,11 +118,23 @@ is no more lines. The hashref contains at least the following keys:
 
 =item *
 
+C<host> - hostname of the machine.
+
+=item *
+
+C<program> - name of the program. 
+
+=item *
+
 C<timestamp> - Unix timestamp for the event.
 
 =item *
 
 C<id> - Local transient mail identifier. 
+
+=item *
+
+C<text> - text description.
 
 =back
 
@@ -168,12 +180,13 @@ sub next {
         my $log = $self->{syslog}->next;
         return undef unless defined $log;
         redo unless $log->{program} =~ /^(?:sendmail|postfix)/;
-        redo if $log->{text} =~ /^(?:NOQUEUE|STARTTLS)/;
+        redo if $log->{text} =~ /^(?:NOQUEUE|STARTTLS|TLS:)/;
+        redo if $log->{text} =~ /prescan: (?:token too long|too many tokens|null leading token) *$/;
 
         $log->{text} =~ s/^(\w+):// and my $id = $1;       # gather the MTA unique id
         redo unless $id;
 
-        redo if $log->{text} =~ /^\s*(?:Milter|SYSERR)/;   # we don't treat these
+        redo if $log->{text} =~ /^\s*(?:[<-]--|[Mm]ilter|SYSERR)/;   # we don't treat these
 
         $log->{text} =~ s/^\s*([^=]+)\s*$/status=$1/;      # format status messages
         $log->{text} =~ s/collect: /collect=/;             # treat collect messages as field identifiers
@@ -228,7 +241,7 @@ SE<eacute>bastien Aperghis-Tramoni E<lt>sebastien@aperghis.netE<gt>
 
 Please report any bugs or feature requests to
 C<bug-parse-syslog-mail@rt.cpan.org>, or through the web interface at
-L<https://rt.cpan.org/NoAuth/ReportBug.html?Queue=Parse-Syslog-Mail>. 
+L<https://rt.cpan.org/NoAuth/Bugs.html?Dist=Parse-Syslog-Mail>. 
 I will be notified, and then you'll automatically be notified 
 of progress on your bug as I make changes.
 
