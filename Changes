@@ -1,5 +1,9 @@
 Revision history for Parse-Syslog-Mail
 
+0.06    2005.07.24
+        [FEATURE] Added support for Qmail logs. Thanks to Laurent Bauer for 
+        providing excerpts.
+
 0.05    2005.07.13
         [BUGFIX] Now skipping a few more garbage lines.
         [TESTS] Improved t/10fields.t in order t oexecute tests with local logs.

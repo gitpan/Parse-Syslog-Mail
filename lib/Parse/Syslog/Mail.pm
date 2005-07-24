@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.05';
+  $VERSION = '0.06';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =head1 SYNOPSIS
 
@@ -29,8 +29,9 @@ Version 0.05
 =head1 DESCRIPTION
 
 As its names implies, C<Parse::Syslog::Mail> presents a simple interface 
-to gather mail information from a syslog. It uses C<Parse::Syslog> for 
-reading the syslog, and offer the same simple interface. 
+to gather mail information from a syslog file. It uses C<Parse::Syslog> for 
+reading the syslog, and offer the same simple interface. Currently supported 
+log formats are: Sendmail, Postfix, Qmail.
 
 
 =head1 METHODS
@@ -111,7 +112,7 @@ sub new {
 
 =item B<next()>
 
-Returns the next line of the syslog as a hashref, C<undef> when there 
+Returns the next line of the syslog as a hashref, or C<undef> when there 
 is no more lines. The hashref contains at least the following keys: 
 
 =over 4
@@ -138,7 +139,7 @@ C<text> - text description.
 
 =back
 
-Other keys are the corresponding fields from a Sendmail entry. 
+Other available keys:
 
 =over 4
 
@@ -162,6 +163,14 @@ C<relay> - MTA host used for relaying the mail.
 
 C<status> - Status of the transaction.
 
+=item *
+
+C<delivery_type> - I<(Qmail only)> type of the delivery: C<"local"> or C<"remote">.
+
+=item *
+
+C<delivery_id> - I<(Qmail only)> id number of the delivery.
+
 =back
 
 B<Example>
@@ -175,32 +184,70 @@ B<Example>
 sub next {
     my $self = shift;
     my %mail = ();
+    my @fields = qw(host program timestamp text);
+    my %delivery2id = ();  # used to map delivery id with msg id (Qmail)
 
     LINE: {
         my $log = $self->{syslog}->next;
         return undef unless defined $log;
-        redo unless $log->{program} =~ /^(?:sendmail|postfix)/;
-        redo if $log->{text} =~ /^(?:NOQUEUE|STARTTLS|TLS:)/;
-        redo if $log->{text} =~ /prescan: (?:token too long|too many tokens|null leading token) *$/;
+        @mail{@fields} = @$log{@fields};
+        my $text = $log->{text};
 
-        $log->{text} =~ s/^(\w+):// and my $id = $1;       # gather the MTA unique id
-        redo unless $id;
+        # Sendmail & Postfix format parsing ------------------------------------
+        if($log->{program} =~ /^(?:sendmail|postfix)/) {
+            redo LINE if $text =~ /^(?:NOQUEUE|STARTTLS|TLS:)/;
+            redo LINE if $text =~ /prescan: (?:token too long|too many tokens|null leading token) *$/;
 
-        redo if $log->{text} =~ /^\s*(?:[<-]--|[Mm]ilter|SYSERR)/;   # we don't treat these
+            $text =~ s/^(\w+):// and my $id = $1;          # gather the MTA unique id
+            redo LINE unless $id;
 
-        $log->{text} =~ s/^\s*([^=]+)\s*$/status=$1/;      # format status messages
-        $log->{text} =~ s/collect: /collect=/;             # treat collect messages as field identifiers
-        $log->{text} =~ s/(\S+),\s+([\w-]+)=/$1\t$2=/g;    # replace field seperators with tab characters
+            redo LINE if $text =~ /^\s*(?:[<-]--|[Mm]ilter|SYSERR)/;   # we don't treat these
 
-        my @fields = split /\t/, $log->{text};
-        %mail = map {
-                s/,$//;  s/^ +//;  s/ +$//;  # cleaning spaces
-                s/^stat=/status=/;           # renaming 'stat' field to 'status'
-                s/.*\s+([\w-]+=)/$1/;        # cleaning up field names
-                split /=/, $_, 2;            # no more than 2 elements
-            } @fields;
-        $mail{id} = $id;
-        map { $mail{$_} = $log->{$_} } qw(host program timestamp text);
+            $text =~ s/^\s*([^=]+)\s*$/status=$1/;         # format status messages
+            $text =~ s/collect: /collect=/;                # treat collect messages as field identifiers
+            $text =~ s/(\S+),\s+([\w-]+)=/$1\t$2=/g;       # replace field seperators with tab characters
+
+            my @fields = split /\t/, $text;
+            %mail = %mail, map {
+                    s/,$//;  s/^ +//;  s/ +$//;  # cleaning spaces
+                    s/^stat=/status=/;           # renaming 'stat' field to 'status'
+                    s/.*\s+([\w-]+=)/$1/;        # cleaning up field names
+                    split /=/, $_, 2;            # no more than 2 elements
+                } @fields;
+            $mail{id} = $id;
+
+        # Qmail format parsing -------------------------------------------------
+        } elsif($log->{program} =~ /^qmail/) {
+            $text =~ s/^(\d+\.\d+) // and $mail{qmail_timestamp} = $1;   # Qmail timestamp
+            redo LINE if $text =~ /^(?:status|bounce|warning)/;
+
+            # record 'new' and 'end' events in the status
+            $text =~ s/^(new|end) msg (\d+)$// 
+                and $mail{status} = "$1 message" and $mail{id} = $2 and last;
+
+            # record 'triple bounce' events in the status
+            $text =~ s/^(triple bounce: discarding bounce)\/(\d+)$// 
+                and $mail{status} = $1 and $mail{id} = $2 and last;
+
+            # mail id and its size
+            $text =~ s/^info msg (\d+): bytes (\d+) from (<[^>]*>) // 
+                and $mail{id} = $1 and $mail{size} = $2 and $mail{from} = $3;
+            
+            # begining of the delivery
+            $text =~ s/^(starting delivery (\d+)): msg (\d+) to (local|remote) (.+)$// 
+                and $mail{status} = $1 and $mail{id} = $3 and $delivery2id{$2} = $3 
+                and $mail{delivery_id} = $2 and $mail{delivery_type} = $4 and $mail{to} = $5;
+
+            $text =~ s/^delivery (\d+): +// 
+                and $mail{delivery_id} = $1 and $mail{id} = $delivery2id{$1} || '';
+            
+            # status of the delivery
+            $text =~ s/^(success|deferral|failure): +(\S+)// 
+                and $mail{status} = "$1: $2" and $mail{status} =~ tr/_/ /;
+
+            # in case of missing mail id, generate one
+            $mail{id} ||= 'psm' . time;
+        }
     }
 
     return \%mail
@@ -232,6 +279,12 @@ file path or a C<File::Tail> object as first argument.
 =head1 SEE ALSO
 
 L<Parse::Syslog>
+
+=head1 TODO
+
+Add support for other mailer daemons (Exim, Courier, Qpsmtpd). 
+Send me logs or, even better, patches, if you want support for your 
+favorite mailer daemon. 
 
 =head1 AUTHOR
 

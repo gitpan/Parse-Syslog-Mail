@@ -6,11 +6,7 @@ use Parse::Syslog::Mail;
 
 my $developer_mode = 0;
 
-my @logs = map { File::Spec->catfile(qw(t logs), $_) } qw(
-    sendmail-plain.log
-    postfix-plain.log
-    sendmail-custom-dsn.log
-);
+my @logs = glob(File::Spec->catfile(qw(t logs *.log)));
 
 push @logs, map { File::Spec->catfile(File::Spec->rootdir, @$_) } 
     [qw(var log syslog)], 
@@ -43,11 +39,23 @@ for my $file (@logs) {
         next if $. > 10_000;   # to prevent too long test times
         ok( defined $log,     " -- line $. => new \$log" );
         is( ref $log, 'HASH', " -- \$log is a hashref" );
+        
         for my $field (keys %$log) {
             like( $field, '/^[\w-]+$/', " ---- is field '$field' a word?" )
         }
-        $log->{id}   and like( $log->{id},   '/^\w+$/',  " --- checking 'id'" );
+        
+        like( $log->{host},      '/^[\w-]+$/',  " --- 'host' field must be present" );
+        like( $log->{program},   '/^[\w/-]+$/', " --- 'program' field must be present" );
+        like( $log->{timestamp}, '/^\d+$/',     " --- 'timestamp' field must be present" );
+        like( $log->{text},      '/^.+$/',      " --- 'text' field must be present" );
+        like( $log->{id},        '/^\w+$/',     " --- 'id' field must be present" );
+        
         $log->{from} and like( $log->{from}, '/^(?:\w+|<.*>)$/', " --- checking 'from'" );
+
+        if($log->{program} =~ /^(?:sendmail|postfix)/) {
+            ok( exists($log->{from}) or exists($log->{to}), 
+                " --- one of 'from' and 'to' should be defined (Sendmail, Postfix)" )
+        }
     }
 }
 
