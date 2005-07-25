@@ -1,6 +1,8 @@
 Parse-Syslog-Mail
 -----------------
 
+DESCRIPTION
+
    This module offers a simple interface to gather mail information 
    from a syslog file. It uses Parse::Syslog::Mail for reading the 
    syslog, and offer the same simple interface. Currently supported 

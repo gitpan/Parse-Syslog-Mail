@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.06';
+  $VERSION = '0.07';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =head1 SYNOPSIS
 
@@ -198,23 +198,33 @@ sub next {
             redo LINE if $text =~ /^(?:NOQUEUE|STARTTLS|TLS:)/;
             redo LINE if $text =~ /prescan: (?:token too long|too many tokens|null leading token) *$/;
 
-            $text =~ s/^(\w+):// and my $id = $1;          # gather the MTA unique id
+            $text =~ s/^(\w+):// and my $id = $1;          # gather the MTA transient id
             redo LINE unless $id;
 
             redo LINE if $text =~ /^\s*(?:[<-]--|[Mm]ilter|SYSERR)/;   # we don't treat these
 
+            $text =~ s/stat=/status=/;           # renaming 'stat' field to 'status'
             $text =~ s/^\s*([^=]+)\s*$/status=$1/;         # format status messages
             $text =~ s/collect: /collect=/;                # treat collect messages as field identifiers
-            $text =~ s/(\S+),\s+([\w-]+)=/$1\t$2=/g;       # replace field seperators with tab characters
+            $text =~ s/(\S+),\s+([\w-]+)=/$1\t$2=/g;       # replace fields seperator with tab character
 
-            my @fields = split /\t/, $text;
-            %mail = %mail, map {
+            %mail = (%mail, map {
                     s/,$//;  s/^ +//;  s/ +$//;  # cleaning spaces
-                    s/^stat=/status=/;           # renaming 'stat' field to 'status'
                     s/.*\s+([\w-]+=)/$1/;        # cleaning up field names
-                    split /=/, $_, 2;            # no more than 2 elements
-                } @fields;
+                    split /=/, $_, 2             # no more than 2 elements
+                 } split /\t/, $text);
             $mail{id} = $id;
+
+        # Courier ESMTP -------------------------------------------------------
+        } elsif($log->{program} =~ /^courier/) {
+            redo LINE if $text =~ /^(?:NOQUEUE|STARTTLS|TLS:)/;
+
+            $text =~ s/,status: /,status=/;     # treat status as a field
+            $text =~ s/,(\w+)=/\t$1=/g;         # replace fields separator with tab character
+
+            %mail = (%mail, map {
+                    split /=/, $_, 2
+                } split /\t/, $text);
 
         # Qmail format parsing -------------------------------------------------
         } elsif($log->{program} =~ /^qmail/) {
