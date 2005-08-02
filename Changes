@@ -1,5 +1,9 @@
 Revision history for Parse-Syslog-Mail
 
+0.08    2005.08.03
+        [BUGFIX] D'oh! Non mailer related lines were not skipped...
+        [TESTS] Reduced the number of read lines in 10fields.t
+
 0.07    2005.07.25
         [BUGFIX] Previous release was broken regarding Sendmail/Postfix logs.
         [FEATURE] Added primitive support for Courier logs (UNTESTED)

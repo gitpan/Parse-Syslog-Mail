@@ -1,6 +1,6 @@
 ---
 name: Parse-Syslog-Mail
-version: 0.07
+version: 0.08
 author:
   - Sébastien Aperghis-Tramoni <sebastien@aperghis.net>
 abstract: Parse mailer logs from syslog
@@ -14,5 +14,5 @@ build_requires:
 provides:
   Parse::Syslog::Mail:
     file: lib/Parse/Syslog/Mail.pm
-    version: 0.07
+    version: 0.08
 generated_by: Module::Build version 0.2611

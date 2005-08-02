@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.07';
+  $VERSION = '0.08';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =head1 SYNOPSIS
 
@@ -42,7 +42,7 @@ log formats are: Sendmail, Postfix, Qmail.
 
 Creates and returns a new C<Parse::Syslog::Mail> object. 
 A file path or a C<File::Tail> object is expected as first argument. 
-Options can follow as a hash. Most are the same as for C<Parse::Syslog::new()>. 
+Options can follow as a hash. Most are the same as for C<Parse::Syslog->new()>. 
 
 B<Options>
 
@@ -257,6 +257,9 @@ sub next {
 
             # in case of missing mail id, generate one
             $mail{id} ||= 'psm' . time;
+
+        } else {
+            redo LINE
         }
     }
 

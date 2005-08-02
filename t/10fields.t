@@ -36,7 +36,7 @@ for my $file (@logs) {
     isa_ok( $maillog, 'Parse::Syslog::Mail'  , " - object" );
 
     while(my $log = $maillog->next) {
-        next if $. > 10_000;   # to prevent too long test times
+        next if $. > 2000;     # to prevent too long test times
         ok( defined $log,     " -- line $. => new \$log" );
         is( ref $log, 'HASH', " -- \$log is a hashref" );
         
