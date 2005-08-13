@@ -7,8 +7,8 @@ use Parse::Syslog::Mail;
 my $file = File::Spec->catfile(qw(t logs sendmail-plain.log));
 
 # check that the following functions are available
-ok( exists &Parse::Syslog::Mail::new,      "new() exists" );
-ok( exists &Parse::Syslog::Mail::next,     "next() exists" );
+ok( defined &Parse::Syslog::Mail::new,     "new() exists" );
+ok( defined &Parse::Syslog::Mail::next,    "next() exists" );
 
 
 # create an object with new() as a class method

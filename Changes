@@ -1,5 +1,12 @@
 Revision history for Parse-Syslog-Mail
 
+0.09    2005.08.13
+        [FEATURE] Added support for a specific case of Sendmail logs 
+        (ruleset=%s, arg1=%s) in order to gather that information.
+        [FEATURE] Added support for recognized other kinds of status.
+        [TESTS] Modified 03diag.t so that it skips if one of Test::Warn or 
+        Test::Exception is not installed.
+
 0.08    2005.08.03
         [BUGFIX] D'oh! Non mailer related lines were not skipped...
         [TESTS] Reduced the number of read lines in 10fields.t

@@ -1,8 +1,12 @@
 use strict;
 use Test::More;
-use Test::Exception;
-use Test::Warn;
-BEGIN { plan tests => 3 }
+BEGIN {
+  eval "use Test::Exception";
+  plan skip_all => "Test::Exception required for testing exceptions" if $@;
+  eval "use Test::Warn";
+  plan skip_all => "Test::Warn required for testing warnings" if $@;
+  plan tests => 3;
+}
 use Parse::Syslog::Mail;
 
 my $maillog = undef;

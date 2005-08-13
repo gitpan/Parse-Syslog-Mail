@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.08';
+  $VERSION = '0.09';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.08
+Version 0.09
 
 =head1 SYNOPSIS
 
@@ -194,25 +194,38 @@ sub next {
         my $text = $log->{text};
 
         # Sendmail & Postfix format parsing ------------------------------------
-        if($log->{program} =~ /^(?:sendmail|postfix)/) {
+        if($log->{program} =~ /^(?:sendmail|sm-mta|postfix)/) {
             redo LINE if $text =~ /^(?:NOQUEUE|STARTTLS|TLS:)/;
             redo LINE if $text =~ /prescan: (?:token too long|too many tokens|null leading token) *$/;
 
-            $text =~ s/^(\w+):// and my $id = $1;          # gather the MTA transient id
+            $text =~ s/^(\w+): *// and my $id = $1;         # gather the MTA transient id
             redo LINE unless $id;
 
             redo LINE if $text =~ /^\s*(?:[<-]--|[Mm]ilter|SYSERR)/;   # we don't treat these
 
-            $text =~ s/stat=/status=/;           # renaming 'stat' field to 'status'
-            $text =~ s/^\s*([^=]+)\s*$/status=$1/;         # format status messages
-            $text =~ s/collect: /collect=/;                # treat collect messages as field identifiers
-            $text =~ s/(\S+),\s+([\w-]+)=/$1\t$2=/g;       # replace fields seperator with tab character
+            $text =~ s/stat=/status=/;                      # renaming 'stat' field to 'status'
+            $text =~ s/^\s*([^=]+)\s*$/status=$1/;          # format other status messages
+            $text =~ s/^\s*([^=]+)\s*;\s*/status=$1, /;     # format other status messages (2)
+            $text =~ s/collect: /collect=/;                 # treat collect messages as field identifiers
+            $text =~ s/(\S+),\s+([\w-]+)=/$1\t$2=/g;        # replace fields seperator with tab character
 
             %mail = (%mail, map {
-                    s/,$//;  s/^ +//;  s/ +$//;  # cleaning spaces
-                    s/.*\s+([\w-]+=)/$1/;        # cleaning up field names
-                    split /=/, $_, 2             # no more than 2 elements
+                    s/,$//;  s/^ +//;  s/ +$//; # cleaning spaces
+                    s/.*\s+([\w-]+=)/$1/;       # cleaning up field names
+                    split /=/, $_, 2            # no more than 2 elements
                  } split /\t/, $text);
+
+            if(exists $mail{ruleset} and exists $mail{arg1}) {
+                $mail{ruleset} eq 'check_mail'  and $mail{from}  = $mail{arg1};
+                $mail{ruleset} eq 'check_rcpt'  and $mail{to}    = $mail{arg1};
+                $mail{ruleset} eq 'check_relay' and $mail{relay} = $mail{arg1};
+
+                unless(exists $mail{status}) {
+                    $mail{reject}     and $mail{status} = "reject: $mail{reject}";
+                    $mail{quarantine} and $mail{status} = "quarantine: $mail{quarantine}";
+                }
+            }
+
             $mail{id} = $id;
 
         # Courier ESMTP -------------------------------------------------------

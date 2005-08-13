@@ -1,5 +1,6 @@
 use strict;
 use ExtUtils::MakeMaker;
+eval 'use ExtUtils::MakeMaker::Coverage';
 
 WriteMakefile(
     NAME                => 'Parse::Syslog::Mail',
@@ -9,8 +10,6 @@ WriteMakefile(
     PREREQ_PM => {
         'Parse::Syslog' => 0,
         'Test::More' => 0,
-        'Test::Exception' => 0,
-        'Test::Warn' => 0,
     },
     PL_FILES            => {},
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
