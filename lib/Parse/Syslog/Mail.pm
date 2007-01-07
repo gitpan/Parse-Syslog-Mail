@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.09';
+  $VERSION = '0.10';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.09
+Version 0.10
 
 =head1 SYNOPSIS
 
@@ -42,11 +42,16 @@ log formats are: Sendmail, Postfix, Qmail.
 
 Creates and returns a new C<Parse::Syslog::Mail> object. 
 A file path or a C<File::Tail> object is expected as first argument. 
-Options can follow as a hash. Most are the same as for C<Parse::Syslog->new()>. 
+Options can follow as a hash. Most are the same as for C<< Parse::Syslog->new() >>. 
 
 B<Options>
 
 =over 4
+
+=item *
+
+C<type> - Format of the syslog stream. Can be one of C<"syslog"> (traditional
+syslog format) or C<"metalog"> (Metalog format).
 
 =item *
 
@@ -74,7 +79,7 @@ names for the parsing of log files with national characters.
 
 C<allow_future> - If true will allow for timestamps in the future. 
 Otherwise timestamps of one day in the future and more will not be returned 
-(as a safety measure against wrong configurations, bogus --year arguments, 
+(as a safety measure against wrong configurations, bogus C<year> arguments, 
 etc.)
 
 =back
@@ -95,14 +100,10 @@ sub new {
     my $file = shift;
     my %args = @_;
 
-    croak "fatal: Expected an argument"
-      unless defined $file;
-    
-    croak "fatal: First argument of new() must be a file path of a File::Tail object"
-      unless -f $file or $file->isa('File::Tail');
-    
+    croak "fatal: Expected an argument" unless defined $file;
+
     eval { $self->{syslog} = new Parse::Syslog $file, %args };
-    if($@) {
+    if ($@) {
         $@ =~ s/ at .*$//;
         croak "fatal: Can't create new Parse::Syslog object: $@";
     }
@@ -194,7 +195,7 @@ sub next {
         my $text = $log->{text};
 
         # Sendmail & Postfix format parsing ------------------------------------
-        if($log->{program} =~ /^(?:sendmail|sm-mta|postfix)/) {
+        if ($log->{program} =~ /^(?:sendmail|sm-mta|postfix)/) {
             redo LINE if $text =~ /^(?:NOQUEUE|STARTTLS|TLS:)/;
             redo LINE if $text =~ /prescan: (?:token too long|too many tokens|null leading token) *$/;
 
@@ -204,6 +205,7 @@ sub next {
             redo LINE if $text =~ /^\s*(?:[<-]--|[Mm]ilter|SYSERR)/;   # we don't treat these
 
             $text =~ s/stat=/status=/;                      # renaming 'stat' field to 'status'
+            $text =~ s/message-id=/msgid=/;                 # renaming 'message-id' field to 'msgid' (Postfix)
             $text =~ s/^\s*([^=]+)\s*$/status=$1/;          # format other status messages
             $text =~ s/^\s*([^=]+)\s*;\s*/status=$1, /;     # format other status messages (2)
             $text =~ s/collect: /collect=/;                 # treat collect messages as field identifiers
@@ -215,12 +217,12 @@ sub next {
                     split /=/, $_, 2            # no more than 2 elements
                  } split /\t/, $text);
 
-            if(exists $mail{ruleset} and exists $mail{arg1}) {
+            if (exists $mail{ruleset} and exists $mail{arg1}) {
                 $mail{ruleset} eq 'check_mail'  and $mail{from}  = $mail{arg1};
                 $mail{ruleset} eq 'check_rcpt'  and $mail{to}    = $mail{arg1};
                 $mail{ruleset} eq 'check_relay' and $mail{relay} = $mail{arg1};
 
-                unless(exists $mail{status}) {
+                unless (exists $mail{status}) {
                     $mail{reject}     and $mail{status} = "reject: $mail{reject}";
                     $mail{quarantine} and $mail{status} = "quarantine: $mail{quarantine}";
                 }
@@ -229,19 +231,18 @@ sub next {
             $mail{id} = $id;
 
         # Courier ESMTP -------------------------------------------------------
-        } elsif($log->{program} =~ /^courier/) {
+        } elsif ($log->{program} =~ /^courier/) {
             redo LINE if $text =~ /^(?:NOQUEUE|STARTTLS|TLS:)/;
 
             $text =~ s/,status: /,status=/;     # treat status as a field
             $text =~ s/,(\w+)=/\t$1=/g;         # replace fields separator with tab character
 
-            %mail = (%mail, map {
-                    split /=/, $_, 2
-                } split /\t/, $text);
+            %mail = (%mail, map { split /=/, $_, 2 } split /\t/, $text);
 
         # Qmail format parsing -------------------------------------------------
-        } elsif($log->{program} =~ /^qmail/) {
+        } elsif ($log->{program} =~ /^qmail/) {
             $text =~ s/^(\d+\.\d+) // and $mail{qmail_timestamp} = $1;   # Qmail timestamp
+            # use Time::TAI64 to parse that timestamp?
             redo LINE if $text =~ /^(?:status|bounce|warning)/;
 
             # record 'new' and 'end' events in the status
@@ -268,8 +269,20 @@ sub next {
             $text =~ s/^(success|deferral|failure): +(\S+)// 
                 and $mail{status} = "$1: $2" and $mail{status} =~ tr/_/ /;
 
-            # in case of missing mail id, generate one
+            # in case of missing MTA transient id, generate one
             $mail{id} ||= 'psm' . time;
+
+        # Exim format parsing --------------------------------------------------
+        } elsif ($log->{program} =~ /^exim/) {
+            # format seems to be DATE TIME TID DIR ADDRESS ?
+            # where DIR is
+            #   => for outgoing email, recipient follows in <>
+            #   <= for incoming email
+            #   == for informational message
+            #   s= for ???
+            # 
+            # possible errors/warnings:
+            #   cancelled by system filter:
 
         } else {
             redo LINE
@@ -286,19 +299,14 @@ sub next {
 
 =over 4
 
-=item Can't create new %s object: %s
+=item C<Can't create new %s object: %s>
 
 B<(F)> Occurs in C<new()>. As the message says, we were unable to create 
 a new object of the given class. The rest of the error may give more information. 
 
-=item Expected an argument
+=item C<Expected an argument>
 
 B<(F)> You tried to call C<new()> with no argument. 
-
-=item First argument of new() must be a file path of a File::Tail object
-
-B<(F)> As the message says, you must give to C<new()> a valid (and readable) 
-file path or a C<File::Tail> object as first argument. 
 
 =back
 

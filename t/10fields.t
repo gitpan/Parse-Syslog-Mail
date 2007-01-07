@@ -27,7 +27,7 @@ if($developer_mode) {
 for my $file (@logs) {
     my $maillog = undef;
     is( $maillog, undef                      , "Creating a new object" );
-    eval { $maillog = new Parse::Syslog::Mail $file };
+    eval { $maillog = new Parse::Syslog::Mail $file, year => 2005 };
     next if $@;
     diag(" -> reading $file") if $developer_mode;
     ok( defined $maillog                     , " - object is defined" );

@@ -1,5 +1,11 @@
 Revision history for Parse-Syslog-Mail
 
+0.10    2007.01.07
+        [FEATURE] Removed an overzealous check to allow all the input 
+        that Parse::Syslog can handle. 
+        [TESTS] Fixed t/10fields.t and t/11values.t to avoid warnings.
+        [DOC] Fixed a Pod nit.
+
 0.09    2005.08.13
         [FEATURE] Added support for a specific case of Sendmail logs 
         (ruleset=%s, arg1=%s) in order to gather that information.

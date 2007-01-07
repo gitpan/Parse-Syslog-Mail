@@ -10,7 +10,7 @@ BEGIN {
 use Parse::Syslog::Mail;
 
 my $maillog = undef;
-my $fake_file = 'no such file';
+my $fake_file = 'Arba';
 my $fake_object = bless {}, 'Fake::Object';
 
 throws_ok {
@@ -20,11 +20,11 @@ throws_ok {
 
 throws_ok {
     $maillog = new Parse::Syslog::Mail $fake_file
-} '/^fatal: First argument of new\(\) must be a file path of a File::Tail object/', 
+} "/^fatal: Can't create new Parse::Syslog object: can't open $fake_file\: No such file or directory/", 
   "calling new() with an argument that looks like a file";
 
 throws_ok {
     $maillog = new Parse::Syslog::Mail $fake_object
-} '/^fatal: First argument of new\(\) must be a file path of a File::Tail object/', 
+} "/^fatal: Can't create new Parse::Syslog object: argument must be either a file-name or an IO::Handle object/", 
   "calling new() with an argument that looks like an object";
 

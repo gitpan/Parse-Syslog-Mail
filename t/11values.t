@@ -35,7 +35,7 @@ my %mail = (
 for my $file (@logs) {
     my $maillog = undef;
     is( $maillog, undef                      , "Creating a new object" );
-    $maillog = new Parse::Syslog::Mail $file;
+    $maillog = new Parse::Syslog::Mail $file, year => 2005;
     ok( defined $maillog                     , " - object is defined" );
     is( ref $maillog, 'Parse::Syslog::Mail'  , " - object is of expected ref type" );
     ok( $maillog->isa('Parse::Syslog::Mail') , " - object is a Parse::Syslog::Mail object" );
