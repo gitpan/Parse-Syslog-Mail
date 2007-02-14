@@ -1,5 +1,11 @@
 Revision history for Parse-Syslog-Mail
 
+0.11    2007.02.14
+        [TESTS] Fixed t/03diag.t to avoid locale problems.
+        [TESTS] Fixed t/podspell.t
+        [TESTS] Added taint check to most test scripts.
+        [DOC] Added pointer to an small article by Philippe Bruhat.
+
 0.10    2007.01.07
         [FEATURE] Removed an overzealous check to allow all the input 
         that Parse::Syslog can handle. 

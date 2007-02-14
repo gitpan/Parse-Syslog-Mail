@@ -1,3 +1,4 @@
+#!perl -T
 use strict;
 use Test::More;
 BEGIN {
@@ -20,7 +21,7 @@ throws_ok {
 
 throws_ok {
     $maillog = new Parse::Syslog::Mail $fake_file
-} "/^fatal: Can't create new Parse::Syslog object: can't open $fake_file\: No such file or directory/", 
+} "/^fatal: Can't create new Parse::Syslog object: can't open $fake_file\: /", 
   "calling new() with an argument that looks like a file";
 
 throws_ok {

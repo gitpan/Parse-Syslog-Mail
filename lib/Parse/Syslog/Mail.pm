@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.10';
+  $VERSION = '0.11';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.10
+Version 0.11
 
 =head1 SYNOPSIS
 
@@ -313,6 +313,9 @@ B<(F)> You tried to call C<new()> with no argument.
 =head1 SEE ALSO
 
 L<Parse::Syslog>
+
+I<Inspecter /var/log/mail.log avec Parse::Syslog::Mail>, by Philippe Bruhat, 
+published in GNU/Linux Magazine France #92, March 2007
 
 =head1 TODO
 
