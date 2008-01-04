@@ -5,7 +5,7 @@ eval 'use ExtUtils::MakeMaker::Coverage';
 WriteMakefile(
     NAME                => 'Parse::Syslog::Mail',
     LICENSE             => 'perl',
-    AUTHOR              => 'Sébastien Aperghis-Tramoni <sebastien@aperghis.net>',
+    AUTHOR              => 'Sebastien Aperghis-Tramoni <sebastien@aperghis.net>',
     VERSION_FROM        => 'lib/Parse/Syslog/Mail.pm',
     ABSTRACT_FROM       => 'lib/Parse/Syslog/Mail.pm',
     PREREQ_PM => {

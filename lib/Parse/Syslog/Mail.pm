@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.11';
+  $VERSION = '0.12';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =head1 SYNOPSIS
 
@@ -207,13 +207,18 @@ sub next {
             $text =~ s/stat=/status=/;                      # renaming 'stat' field to 'status'
             $text =~ s/message-id=/msgid=/;                 # renaming 'message-id' field to 'msgid' (Postfix)
             $text =~ s/^\s*([^=]+)\s*$/status=$1/;          # format other status messages
-            $text =~ s/^\s*([^=]+)\s*;\s*/status=$1, /;     # format other status messages (2)
+
+            # format other status messages (2)
+            if ($text =~ s/^\s*([^=]+)\s*;\s*/status=$1, /) {
+                $text =~ s/(\S+)\s+([\w-]+)=/$1, $2=/g;
+            }
+
             $text =~ s/collect: /collect=/;                 # treat collect messages as field identifiers
             $text =~ s/(\S+),\s+([\w-]+)=/$1\t$2=/g;        # replace fields seperator with tab character
 
             %mail = (%mail, map {
                     s/,$//;  s/^ +//;  s/ +$//; # cleaning spaces
-                    s/.*\s+([\w-]+=)/$1/;       # cleaning up field names
+                    s/^\s+([\w-]+=)/$1/;        # cleaning up field names
                     split /=/, $_, 2            # no more than 2 elements
                  } split /\t/, $text);
 
@@ -325,12 +330,12 @@ favorite mailer daemon.
 
 =head1 AUTHOR
 
-SE<eacute>bastien Aperghis-Tramoni E<lt>sebastien@aperghis.netE<gt>
+SE<eacute>bastien Aperghis-Tramoni C<< E<lt>sebastien (at) aperghis.netE<gt> >>
 
 =head1 BUGS
 
 Please report any bugs or feature requests to
-C<bug-parse-syslog-mail@rt.cpan.org>, or through the web interface at
+C<bug-parse-syslog-mail (at) rt.cpan.org>, or through the web interface at
 L<https://rt.cpan.org/NoAuth/Bugs.html?Dist=Parse-Syslog-Mail>. 
 I will be notified, and then you'll automatically be notified 
 of progress on your bug as I make changes.
@@ -341,7 +346,7 @@ Most probably the same as C<Parse::Syslog>, see L<Parse::Syslog/"BUGS">
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2005 SE<eacute>bastien Aperghis-Tramoni, All Rights Reserved.
+Copyright 2005, 2006, 2007, 2008 SE<eacute>bastien Aperghis-Tramoni, All Rights Reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

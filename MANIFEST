@@ -12,6 +12,8 @@ t/01api.t
 t/03diag.t
 t/10fields.t
 t/11values.t
+t/cpan-rt-28807.log
+t/cpan-rt-28807.t
 t/distchk.t
 t/logs/postfix-plain.log
 t/logs/sendmail-custom-dsn.log

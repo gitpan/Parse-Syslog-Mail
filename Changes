@@ -1,5 +1,10 @@
 Revision history for Parse-Syslog-Mail
 
+0.12    2008.01.04
+        [BUGFIX] CPAN-RT#28807: Logs of bounced mails were not 
+        correctly parsed. Thanks to salagadoola.
+        [DOC] Modified the email addresses in order to avoid spam.
+
 0.11    2007.02.14
         [TESTS] Fixed t/03diag.t to avoid locale problems.
         [TESTS] Fixed t/podspell.t
@@ -37,7 +42,7 @@ Revision history for Parse-Syslog-Mail
         [DOC] Updated documentation.
 
 0.04    2005.06.04
-        [BUGFIX] RT#12775 (Jason T Hardy): Odd number of elements in hashref 
+        [BUGFIX] CPAN-RT#12775 (Jason T Hardy): Odd number of elements in hashref 
         because of map and split bug
         [FEATURE] Now restricting fields names to words (/^[\w-]$/)
         [TESTS] Renamed t/10parse.t to t/11values.t
