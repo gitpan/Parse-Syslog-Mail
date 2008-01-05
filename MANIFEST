@@ -6,6 +6,7 @@ Makefile.PL
 README
 lib/Parse/Syslog/Mail.pm
 eg/parse.pl
+t/Utils.pm
 t/00load.t
 t/00prereq.t
 t/01api.t

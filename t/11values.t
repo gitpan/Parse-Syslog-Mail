@@ -2,10 +2,12 @@
 use strict;
 use File::Spec;
 use Test::More;
-BEGIN { plan 'no_plan' }
+use lib "t";
+use Utils;
 use Parse::Syslog::Mail;
 
-my @logs = glob(File::Spec->catfile(qw(t logs *.log)));
+plan 'no_plan';
+my @logs = my_glob(File::Spec->catfile(qw(t logs *.log)));
 
 my %mail = (
     j061bW9V000809 => {

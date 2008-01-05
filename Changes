@@ -1,5 +1,9 @@
 Revision history for Parse-Syslog-Mail
 
+0.13    2008.01.05
+        [TESTS] Fixed t/10fields.t and t/11values.t so their pass
+        under old Perls where glob() is broken under taint mode.
+
 0.12    2008.01.04
         [BUGFIX] CPAN-RT#28807: Logs of bounced mails were not 
         correctly parsed. Thanks to salagadoola.

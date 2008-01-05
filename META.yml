@@ -1,6 +1,6 @@
 ---
 name: Parse-Syslog-Mail
-version: 0.12
+version: 0.13
 author:
   - 'Sebastien Aperghis-Tramoni <sebastien@aperghis.net>'
 abstract: Parse mailer logs from syslog
@@ -14,7 +14,7 @@ build_requires:
 provides:
   Parse::Syslog::Mail:
     file: lib/Parse/Syslog/Mail.pm
-    version: 0.12
+    version: 0.13
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

@@ -2,12 +2,15 @@
 use strict;
 use File::Spec;
 use Test::More;
-BEGIN { plan 'no_plan' }
+use lib "t";
+use Utils;
 use Parse::Syslog::Mail;
 
-my $developer_mode = 0;
+plan 'no_plan';
 
-my @logs = glob(File::Spec->catfile(qw(t logs *.log)));
+my $more_tests = 0;
+
+my @logs = my_glob(File::Spec->catfile(qw(t logs *.log)));
 
 push @logs, map { File::Spec->catfile(File::Spec->rootdir, @$_) } 
     [qw(var log syslog)], 
@@ -16,12 +19,12 @@ push @logs, map { File::Spec->catfile(File::Spec->rootdir, @$_) }
     [qw(var log mail info)], 
 ;
 
-if($developer_mode) {
+if ($more_tests) {
     @logs = @ARGV if @ARGV;
 
     my $local_logs_dir = File::Spec->catdir('workshop', 'logs');
-    if(-d $local_logs_dir) {
-        push @logs, glob(File::Spec->catfile($local_logs_dir, '*'))
+    if (-d $local_logs_dir) {
+        push @logs, my_glob(File::Spec->catfile($local_logs_dir, '*'))
     }
 }
 
@@ -30,13 +33,13 @@ for my $file (@logs) {
     is( $maillog, undef                      , "Creating a new object" );
     eval { $maillog = new Parse::Syslog::Mail $file, year => 2005 };
     next if $@;
-    diag(" -> reading $file") if $developer_mode;
+    diag(" -> reading $file") if $more_tests;
     ok( defined $maillog                     , " - object is defined" );
     is( ref $maillog, 'Parse::Syslog::Mail'  , " - object is of expected ref type" );
     ok( $maillog->isa('Parse::Syslog::Mail') , " - object is a Parse::Syslog::Mail object" );
     isa_ok( $maillog, 'Parse::Syslog::Mail'  , " - object" );
 
-    while(my $log = $maillog->next) {
+    while (my $log = $maillog->next) {
         next if $. > 2000;     # to prevent too long test times
         ok( defined $log,     " -- line $. => new \$log" );
         is( ref $log, 'HASH', " -- \$log is a hashref" );
@@ -53,7 +56,7 @@ for my $file (@logs) {
         
         $log->{from} and like( $log->{from}, '/^(?:\w+|<.*>)$/', " --- checking 'from'" );
 
-        if($log->{program} =~ /^(?:sendmail|postfix)/) {
+        if ($log->{program} =~ /^(?:sendmail|postfix)/) {
             ok( exists($log->{from}) or exists($log->{to}), 
                 " --- one of 'from' and 'to' should be defined (Sendmail, Postfix)" )
         }
