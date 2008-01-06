@@ -14,7 +14,6 @@ my @expected = (
         relay   => 'none',
         status  => 'bounced (Host or domain name not found. Name service error for name=gmail.coml type=A: Host not found)',
         text    => '84179E35: to=<secdalek@gmail.coml>, relay=none, delay=0, status=bounced (Host or domain name not found. Name service error for name=gmail.coml type=A: Host not found)',
-        timestamp   => 1186959173,
         to  => '<secdalek@gmail.coml>',
     },
     {
@@ -27,7 +26,6 @@ my @expected = (
         proto   => 'ESMTP',
         status  => 'reject: header Date: Mon, 18 Jan 2038 19:07:11 +0800 from unknown[192.168.7.245]',
         text    => '8B7EF2BB7: reject: header Date: Mon, 18 Jan 2038 19:07:11 +0800 from unknown[192.168.7.245]; from=<bcfxhdfyrey4l@easterndalek.com> to=<service@exterminate.com> proto=ESMTP helo=<realmail.iiiiiii.com>: Message content rejected',
-        timestamp   => 1187014018,
     }, 
 );
 
@@ -38,6 +36,7 @@ my $maillog = Parse::Syslog::Mail->new($logfile, year => 2007);
 
 while (my $log = $maillog->next) {
     my $expected = shift @expected;
+    delete $log->{timestamp};
     is_deeply($log, $expected, "[CPAN-RT 28807] checking parsed log against expected structures");
 }
 

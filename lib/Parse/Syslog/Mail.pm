@@ -4,7 +4,7 @@ use Carp;
 use Parse::Syslog;
 
 { no strict;
-  $VERSION = '0.13';
+  $VERSION = '0.14';
 }
 
 =head1 NAME
@@ -13,7 +13,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.13
+Version 0.14
 
 =head1 SYNOPSIS
 
