@@ -1,10 +1,12 @@
 package Parse::Syslog::Mail;
 use strict;
+use warnings;
 use Carp;
 use Parse::Syslog;
 
-{ no strict;
-  $VERSION = '0.14';
+{
+    no strict;
+    $VERSION = '0.15';
 }
 
 =head1 NAME
@@ -13,7 +15,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.14
+Version 0.15
 
 =head1 SYNOPSIS
 
@@ -204,6 +206,7 @@ sub next {
 
             redo LINE if $text =~ /^\s*(?:[<-]--|[Mm]ilter|SYSERR)/;   # we don't treat these
 
+            $text =~ s/^(\w+): *clone:/clone=$1/;           # handle clone messages
             $text =~ s/stat=/status=/;                      # renaming 'stat' field to 'status'
             $text =~ s/message-id=/msgid=/;                 # renaming 'message-id' field to 'msgid' (Postfix)
             $text =~ s/^\s*([^=]+)\s*$/status=$1/;          # format other status messages

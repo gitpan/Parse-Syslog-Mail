@@ -9,8 +9,11 @@ WriteMakefile(
     VERSION_FROM        => 'lib/Parse/Syslog/Mail.pm',
     ABSTRACT_FROM       => 'lib/Parse/Syslog/Mail.pm',
     PREREQ_PM => {
+        # prereqs
         'Parse::Syslog' => 0,
-        'Test::More' => 0,
+
+        # build/test prereqs
+        'Test::More'    => 0,
     },
     PL_FILES            => {},
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

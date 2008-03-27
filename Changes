@@ -1,5 +1,10 @@
 Revision history for Parse-Syslog-Mail
 
+0.15    2008.03.27 - Sebastien Aperghis-Tramoni (SAPER)
+        [FEATURE] Handle clone records, thanks to a report from Imacat.
+        [TESTS] t/10fields.t now accepts files in argument, for running
+        the tests only on these.
+
 0.14    2008.01.06 - Sebastien Aperghis-Tramoni (SAPER)
         [TESTS] Modified t/cpan-rt-28807.t so it passes on CPAN Testers
         smoke boxes.

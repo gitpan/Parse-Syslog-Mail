@@ -18,7 +18,10 @@ t/cpan-rt-28807.t
 t/distchk.t
 t/logs/postfix-plain.log
 t/logs/sendmail-custom-dsn.log
+t/logs/sendmail-done.log
 t/logs/sendmail-plain.log
+t/logs/sendmail-ruleset.log
+t/logs/technoids.log
 t/podcover.t
 t/pod.t
 t/portfs.t

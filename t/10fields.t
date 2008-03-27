@@ -9,19 +9,23 @@ use Parse::Syslog::Mail;
 plan 'no_plan';
 
 my $more_tests = 0;
+my @logs = ();
 
-my @logs = my_glob(File::Spec->catfile(qw(t logs *.log)));
+if (@ARGV) {
+    @logs = @ARGV 
+}
+else {
+    @logs = my_glob(File::Spec->catfile(qw(t logs *.log)));
 
-push @logs, map { File::Spec->catfile(File::Spec->rootdir, @$_) } 
-    [qw(var log syslog)], 
-    [qw(var log maillog)], 
-    [qw(var log mail.log)], 
-    [qw(var log mail info)], 
-;
+    push @logs, map { File::Spec->catfile(File::Spec->rootdir, @$_) } 
+        [qw(var log syslog)], 
+        [qw(var log maillog)], 
+        [qw(var log mail.log)], 
+        [qw(var log mail info)], 
+    ;
+}
 
 if ($more_tests) {
-    @logs = @ARGV if @ARGV;
-
     my $local_logs_dir = File::Spec->catdir('workshop', 'logs');
     if (-d $local_logs_dir) {
         push @logs, my_glob(File::Spec->catfile($local_logs_dir, '*'))
@@ -43,17 +47,17 @@ for my $file (@logs) {
         next if $. > 2000;     # to prevent too long test times
         ok( defined $log,     " -- line $. => new \$log" );
         is( ref $log, 'HASH', " -- \$log is a hashref" );
-        
+
         for my $field (keys %$log) {
             like( $field, '/^[\w-]+$/', " ---- is field '$field' a word?" )
         }
-        
-        like( $log->{host},      '/^[\w-]+$/',  " --- 'host' field must be present" );
+
+        like( $log->{host},      '/^[\w.-]+$/', " --- 'host' field must be present" );
         like( $log->{program},   '/^[\w/-]+$/', " --- 'program' field must be present" );
         like( $log->{timestamp}, '/^\d+$/',     " --- 'timestamp' field must be present" );
         like( $log->{text},      '/^.+$/',      " --- 'text' field must be present" );
         like( $log->{id},        '/^\w+$/',     " --- 'id' field must be present" );
-        
+
         $log->{from} and like( $log->{from}, '/^(?:\w+|<.*>)$/', " --- checking 'from'" );
 
         if ($log->{program} =~ /^(?:sendmail|postfix)/) {
