@@ -6,7 +6,7 @@ use Parse::Syslog;
 
 {
     no strict;
-    $VERSION = '0.15';
+    $VERSION = '0.16';
 }
 
 =head1 NAME
@@ -15,7 +15,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.15
+Version 0.16
 
 =head1 SYNOPSIS
 
@@ -200,6 +200,7 @@ sub next {
         if ($log->{program} =~ /^(?:sendmail|sm-mta|postfix)/) {
             redo LINE if $text =~ /^(?:NOQUEUE|STARTTLS|TLS:)/;
             redo LINE if $text =~ /prescan: (?:token too long|too many tokens|null leading token) *$/;
+            redo LINE if $text =~ /possible SMTP attack/;
 
             $text =~ s/^(\w+): *// and my $id = $1;         # gather the MTA transient id
             redo LINE unless $id;

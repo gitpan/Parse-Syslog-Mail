@@ -1,5 +1,9 @@
 Revision history for Parse-Syslog-Mail
 
+0.16    2008.04.16 - Sebastien Aperghis-Tramoni (SAPER)
+        [BUGFIX] Handle records where local hostname is replaced by the
+        host IP address, thanks to a report from Imacat.
+
 0.15    2008.03.27 - Sebastien Aperghis-Tramoni (SAPER)
         [FEATURE] Handle clone records, thanks to a report from Imacat.
         [TESTS] t/10fields.t now accepts files in argument, for running

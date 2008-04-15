@@ -7,15 +7,16 @@ my $builder = Module::Build->new(
     dist_author         => 'Sebastien Aperghis-Tramoni <sebastien@aperghis.net>',
     dist_version_from   => 'lib/Parse/Syslog/Mail.pm',
     requires => {
+        'perl'          => 5,
         'Parse::Syslog' => 0,
     },
     build_requires => {
-        'Test::More' => 0,
+        'Test::More'    => 0,
     },
     recommands => {
-        'File::Tail' => 0,
+        'File::Tail'    => 0,
         'Test::Exception' => 0,
-        'Test::Warn' => 0,
+        'Test::Warn'    => 0,
     },
     add_to_cleanup      => [ 'Parse-Syslog-Mail-*' ],
 );
