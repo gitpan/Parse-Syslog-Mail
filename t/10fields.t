@@ -58,7 +58,7 @@ for my $file (@logs) {
         like( $log->{text},      '/^.+$/',      " --- 'text' field must be present" );
         like( $log->{id},        '/^\w+$/',     " --- 'id' field must be present" );
 
-        $log->{from} and like( $log->{from}, '/^(?:\w+|<.*>)$/', " --- checking 'from'" );
+        $log->{from} and like( $log->{from}, '/^(?:\w+|.*\@.*|<.*>)$/', " --- checking 'from'" );
 
         if ($log->{program} =~ /^(?:sendmail|postfix)/) {
             ok( exists($log->{from}) or exists($log->{to}), 

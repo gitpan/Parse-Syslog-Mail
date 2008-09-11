@@ -10,6 +10,7 @@ WriteMakefile(
     ABSTRACT_FROM       => 'lib/Parse/Syslog/Mail.pm',
     PREREQ_PM => {
         # prereqs
+        'Carp'          => 0,
         'Parse::Syslog' => 0,
 
         # build/test prereqs

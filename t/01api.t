@@ -20,7 +20,7 @@ is( $@, '',                                " - no error" );
 ok( defined $parser,                       " - is defined" );
 ok( $parser->isa('Parse::Syslog::Mail'),   " - is a Parse::Syslog::Mail object" );
 is( ref $parser, 'Parse::Syslog::Mail',    " - is a Parse::Syslog::Mail ref" );
-isa_ok( $parser, 'Parse::Syslog::Mail'     );
+isa_ok( $parser, 'Parse::Syslog::Mail',    " -" );
 
 # check that the following object methods are available
 is( ref $parser->can('new'),     'CODE',   " - can new()" );
@@ -35,7 +35,7 @@ is( $@, '',                                " - no error" );
 ok( defined $parser2,                      " - is defined" );
 ok( $parser2->isa('Parse::Syslog::Mail'),  " - is a Parse::Syslog::Mail object" );
 is( ref $parser2, 'Parse::Syslog::Mail',   " - is a Parse::Syslog::Mail ref" );
-isa_ok( $parser2, 'Parse::Syslog::Mail'    );
+isa_ok( $parser2, 'Parse::Syslog::Mail',   " -" );
 
 # check that the following object methods are available
 is( ref $parser2->can('new'),     'CODE',   " - can new()" );

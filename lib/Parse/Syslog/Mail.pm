@@ -6,7 +6,7 @@ use Parse::Syslog;
 
 {
     no strict;
-    $VERSION = '0.16';
+    $VERSION = '0.17';
 }
 
 =head1 NAME
@@ -15,7 +15,7 @@ Parse::Syslog::Mail - Parse mailer logs from syslog
 
 =head1 VERSION
 
-Version 0.16
+Version 0.17
 
 =head1 SYNOPSIS
 
@@ -104,11 +104,10 @@ sub new {
 
     croak "fatal: Expected an argument" unless defined $file;
 
-    eval { $self->{syslog} = new Parse::Syslog $file, %args };
-    if ($@) {
+    $self->{syslog} = eval { Parse::Syslog->new($file, %args) } or do {
         $@ =~ s/ at .*$//;
         croak "fatal: Can't create new Parse::Syslog object: $@";
-    }
+    };
 
     return $self
 }

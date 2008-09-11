@@ -8,6 +8,7 @@ my $builder = Module::Build->new(
     dist_version_from   => 'lib/Parse/Syslog/Mail.pm',
     requires => {
         'perl'          => 5,
+        'Carp'          => 0,
         'Parse::Syslog' => 0,
     },
     build_requires => {
